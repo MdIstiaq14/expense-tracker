@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FiTrendingUp, FiUser, FiMail, FiLock, FiArrowRight, FiEye, FiEyeOff } from 'react-icons/fi';
 import { useExpenses } from '../context/ExpenseContext';
 
+import logoImg from '../assets/logo.png';
+
 const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -31,9 +33,7 @@ const Register = () => {
       <div className="w-full max-w-md space-y-8 bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-soft-lg border border-gray-100 dark:border-gray-700/60">
         {/* Brand Header */}
         <div className="text-center">
-          <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-primary-600 to-primary-400 text-white shadow-lg shadow-primary-500/20 mb-4">
-            <FiTrendingUp className="h-7 w-7" />
-          </div>
+          <img src={logoImg} alt="My Expense Tracker" className="h-16 w-16 mx-auto mb-4 rounded-2xl object-cover shadow-lg shadow-emerald-500/10 border border-gray-100 dark:border-gray-700" />
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
             Create an Account
           </h2>

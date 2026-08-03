@@ -3,6 +3,8 @@ import { NavLink } from 'react-router-dom';
 import { FiGrid, FiList, FiPlusCircle, FiX, FiTrendingUp, FiLogOut } from 'react-icons/fi';
 import { useExpenses } from '../context/ExpenseContext';
 
+import logoImg from '../assets/logo.png';
+
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const { dashboardData, formatCurrency, user, logout } = useExpenses();
 
@@ -31,12 +33,10 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         {/* Sidebar Header */}
         <div className="flex h-16 items-center justify-between px-6 border-b border-gray-100 dark:border-gray-700/50">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-primary-600 to-primary-400 text-white shadow-md shadow-primary-500/20">
-              <FiTrendingUp className="h-6 w-6" />
-            </div>
+            <img src={logoImg} alt="My Expense Tracker" className="h-10 w-10 rounded-xl object-cover shadow-md shrink-0" />
             <div>
               <span className="font-bold text-gray-900 dark:text-white text-base tracking-tight leading-tight block">My Expense</span>
-              <span className="block text-[10px] font-bold text-primary-500 uppercase tracking-wider mt-[-1px]">Tracker</span>
+              <span className="block text-[9px] font-bold text-emerald-500 uppercase tracking-widest mt-[-1px]">Track &bull; Manage &bull; Grow</span>
             </div>
           </div>
           <button
