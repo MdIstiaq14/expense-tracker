@@ -9,8 +9,12 @@ const {
   exportExpensesCSV,
   importExpensesCSV
 } = require('../controllers/expenseController');
+const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
+
+// Protect all expense endpoints with JWT auth middleware
+router.use(protect);
 
 // Multer configuration for memory storage (for CSV upload)
 const storage = multer.memoryStorage();
@@ -23,7 +27,7 @@ const upload = multer({
       cb(new Error('Only CSV files are allowed'), false);
     }
   },
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+  limits: { fileSize: 5 * 1024 * 1024 }
 });
 
 // CSV routes

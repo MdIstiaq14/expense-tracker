@@ -4,48 +4,75 @@ const API_BASE_URL = import.meta.env.VITE_API_URL
   ? (import.meta.env.VITE_API_URL.endsWith('/api') ? import.meta.env.VITE_API_URL : `${import.meta.env.VITE_API_URL}/api`)
   : '/api';
 
+// Create Axios Instance
+const api = axios.create({
+  baseURL: API_BASE_URL,
+});
+
+// Interceptor to attach Authorization Bearer token automatically
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+}, (error) => {
+  return Promise.reject(error);
+});
+
 const expenseService = {
-  // Get dashboard statistics
+  // Auth API
+  register: async (userData) => {
+    const response = await api.post('/auth/register', userData);
+    return response.data;
+  },
+
+  login: async (credentials) => {
+    const response = await api.post('/auth/login', credentials);
+    return response.data;
+  },
+
+  getMe: async () => {
+    const response = await api.get('/auth/me');
+    return response.data;
+  },
+
+  // Dashboard API
   getDashboard: async () => {
-    const response = await axios.get(`${API_BASE_URL}/dashboard`);
+    const response = await api.get('/dashboard');
     return response.data;
   },
 
-  // Get list of expenses with filters
+  // Expenses API
   getExpenses: async (params = {}) => {
-    const response = await axios.get(`${API_BASE_URL}/expenses`, { params });
+    const response = await api.get('/expenses', { params });
     return response.data;
   },
 
-  // Get single expense
   getExpenseById: async (id) => {
-    const response = await axios.get(`${API_BASE_URL}/expenses/${id}`);
+    const response = await api.get(`/expenses/${id}`);
     return response.data;
   },
 
-  // Create new expense
   createExpense: async (expenseData) => {
-    const response = await axios.post(`${API_BASE_URL}/expenses`, expenseData);
+    const response = await api.post('/expenses', expenseData);
     return response.data;
   },
 
-  // Update existing expense
   updateExpense: async (id, expenseData) => {
-    const response = await axios.put(`${API_BASE_URL}/expenses/${id}`, expenseData);
+    const response = await api.put(`/expenses/${id}`, expenseData);
     return response.data;
   },
 
-  // Delete expense
   deleteExpense: async (id) => {
-    const response = await axios.delete(`${API_BASE_URL}/expenses/${id}`);
+    const response = await api.delete(`/expenses/${id}`);
     return response.data;
   },
 
-  // Import expenses via CSV file upload
   importCSV: async (file) => {
     const formData = new FormData();
     formData.append('file', file);
-    const response = await axios.post(`${API_BASE_URL}/expenses/import`, formData, {
+    const response = await api.post('/expenses/import', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -53,7 +80,6 @@ const expenseService = {
     return response.data;
   },
 
-  // Export expenses (returns direct download url link)
   getExportUrl: () => {
     return `${API_BASE_URL}/expenses/export`;
   }

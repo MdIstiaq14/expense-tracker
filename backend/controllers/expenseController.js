@@ -3,14 +3,15 @@ const { Parser } = require('json2csv');
 const csv = require('csv-parser');
 const stream = require('stream');
 
-// @desc    Get all expenses with search, filter, sort, pagination
+// @desc    Get all expenses for logged in user with search, filter, sort, pagination
 // @route   GET /api/expenses
-// @access  Public
+// @access  Private
 exports.getExpenses = async (req, res) => {
   try {
     const { search, category, startDate, endDate, month, sortBy, page = 1, limit = 10 } = req.query;
 
-    const query = {};
+    // Filter strictly by logged-in user ID
+    const query = { user: req.user._id };
 
     // 1. Search by title (case insensitive regex)
     if (search) {
@@ -29,7 +30,6 @@ exports.getExpenses = async (req, res) => {
         query.date.$gte = new Date(startDate);
       }
       if (endDate) {
-        // Set end date to end of the day
         const end = new Date(endDate);
         end.setHours(23, 59, 59, 999);
         query.date.$lte = end;
@@ -70,7 +70,7 @@ exports.getExpenses = async (req, res) => {
       success: true,
       count: expenses.length,
       total,
-      pages: Math.ceil(total / limitNum),
+      pages: Math.ceil(total / limitNum) || 1,
       currentPage: parseInt(page),
       data: expenses
     });
@@ -79,12 +79,12 @@ exports.getExpenses = async (req, res) => {
   }
 };
 
-// @desc    Get single expense
+// @desc    Get single expense for logged in user
 // @route   GET /api/expenses/:id
-// @access  Public
+// @access  Private
 exports.getExpenseById = async (req, res) => {
   try {
-    const expense = await Expense.findById(req.params.id);
+    const expense = await Expense.findOne({ _id: req.params.id, user: req.user._id });
     if (!expense) {
       return res.status(404).json({ success: false, message: 'Expense not found' });
     }
@@ -94,14 +94,15 @@ exports.getExpenseById = async (req, res) => {
   }
 };
 
-// @desc    Create new expense
+// @desc    Create new expense bound to logged in user
 // @route   POST /api/expenses
-// @access  Public
+// @access  Private
 exports.createExpense = async (req, res) => {
   try {
     const { title, amount, category, paymentMethod, date, notes } = req.body;
 
     const expense = await Expense.create({
+      user: req.user._id,
       title,
       amount,
       category,
@@ -122,12 +123,12 @@ exports.createExpense = async (req, res) => {
 
 // @desc    Update expense
 // @route   PUT /api/expenses/:id
-// @access  Public
+// @access  Private
 exports.updateExpense = async (req, res) => {
   try {
     const { title, amount, category, paymentMethod, date, notes } = req.body;
 
-    let expense = await Expense.findById(req.params.id);
+    let expense = await Expense.findOne({ _id: req.params.id, user: req.user._id });
     if (!expense) {
       return res.status(404).json({ success: false, message: 'Expense not found' });
     }
@@ -150,10 +151,10 @@ exports.updateExpense = async (req, res) => {
 
 // @desc    Delete expense
 // @route   DELETE /api/expenses/:id
-// @access  Public
+// @access  Private
 exports.deleteExpense = async (req, res) => {
   try {
-    const expense = await Expense.findById(req.params.id);
+    const expense = await Expense.findOne({ _id: req.params.id, user: req.user._id });
     if (!expense) {
       return res.status(404).json({ success: false, message: 'Expense not found' });
     }
@@ -165,12 +166,12 @@ exports.deleteExpense = async (req, res) => {
   }
 };
 
-// @desc    Export expenses to CSV
+// @desc    Export expenses to CSV for logged in user
 // @route   GET /api/expenses/export
-// @access  Public
+// @access  Private
 exports.exportExpensesCSV = async (req, res) => {
   try {
-    const expenses = await Expense.find().sort({ date: -1 });
+    const expenses = await Expense.find({ user: req.user._id }).sort({ date: -1 });
 
     const fields = [
       { label: 'Title', value: 'title' },
@@ -185,16 +186,16 @@ exports.exportExpensesCSV = async (req, res) => {
     const csvData = json2csvParser.parse(expenses);
 
     res.header('Content-Type', 'text/csv');
-    res.attachment('expenses.csv');
+    res.attachment('my-expenses.csv');
     return res.status(200).send(csvData);
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// @desc    Import expenses from CSV
+// @desc    Import expenses from CSV bound to logged in user
 // @route   POST /api/expenses/import
-// @access  Public
+// @access  Private
 exports.importExpensesCSV = async (req, res) => {
   try {
     if (!req.file) {
@@ -213,7 +214,6 @@ exports.importExpensesCSV = async (req, res) => {
       .pipe(csv())
       .on('data', (row) => {
         rowIndex++;
-        // Clean keys (trim spaces/BOM)
         const cleanRow = {};
         Object.keys(row).forEach(key => {
           cleanRow[key.trim()] = row[key];
@@ -226,7 +226,6 @@ exports.importExpensesCSV = async (req, res) => {
         const dateStr = cleanRow['Date'] || cleanRow['date'];
         const notes = cleanRow['Notes'] || cleanRow['notes'] || '';
 
-        // Validation checks
         if (!title) {
           hasErrors = true;
           errors.push(`Row ${rowIndex}: Title is required`);
@@ -241,13 +240,10 @@ exports.importExpensesCSV = async (req, res) => {
         }
 
         const date = dateStr ? new Date(dateStr) : new Date();
-        if (isNaN(date.getTime())) {
-          hasErrors = true;
-          errors.push(`Row ${rowIndex}: Invalid Date format`);
-        }
 
         if (!hasErrors) {
           expenses.push({
+            user: req.user._id,
             title,
             amount,
             category,

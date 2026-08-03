@@ -1,10 +1,10 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { FiGrid, FiList, FiPlusCircle, FiX, FiTrendingUp, FiSettings, FiHelpCircle } from 'react-icons/fi';
+import { FiGrid, FiList, FiPlusCircle, FiX, FiTrendingUp, FiLogOut } from 'react-icons/fi';
 import { useExpenses } from '../context/ExpenseContext';
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
-  const { dashboardData, formatCurrency } = useExpenses();
+  const { dashboardData, formatCurrency, user, logout } = useExpenses();
 
   const navigation = [
     { name: 'Dashboard', to: '/', icon: FiGrid },
@@ -80,6 +80,17 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
               }}
             </NavLink>
           ))}
+
+          <button
+            onClick={() => {
+              setIsOpen(false);
+              logout();
+            }}
+            className="w-full flex items-center gap-3.5 px-4 py-3 text-sm font-medium rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-all duration-200"
+          >
+            <FiLogOut className="h-5 w-5 text-rose-500" />
+            Sign Out
+          </button>
         </nav>
 
         {/* Sidebar Footer - User Quick stats summary */}
@@ -95,14 +106,13 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
               <span className="text-xs font-medium text-gray-500 dark:text-gray-400">spent</span>
             </div>
             <div className="mt-3.5 w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden">
-              {/* Soft budget target progress bar */}
               <div 
                 className="bg-gradient-to-r from-primary-500 to-primary-600 h-full rounded-full transition-all duration-500"
                 style={{ width: `${Math.min(100, (dashboardData.monthlyExpense / 50000) * 100)}%` }}
               />
             </div>
-            <span className="text-[10px] text-gray-400 dark:text-gray-500 mt-2 block font-medium">
-              Based on soft target limit of ৳50,000.00
+            <span className="text-[10px] text-gray-400 dark:text-gray-500 mt-2 block font-medium truncate">
+              {user?.name ? `${user.name}'s Limit: ৳50,000.00` : 'Target limit: ৳50,000.00'}
             </span>
           </div>
         )}

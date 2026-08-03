@@ -7,6 +7,15 @@ const ExpenseContext = createContext();
 export const useExpenses = () => useContext(ExpenseContext);
 
 export const ExpenseProvider = ({ children }) => {
+  // Auth state
+  const [token, setToken] = useState(() => localStorage.getItem('token') || '');
+  const [user, setUser] = useState(() => {
+    const saved = localStorage.getItem('user');
+    return saved ? JSON.parse(saved) : null;
+  });
+  const [authLoading, setAuthLoading] = useState(true);
+
+  // App data states
   const [expenses, setExpenses] = useState([]);
   const [pagination, setPagination] = useState({
     total: 0,
@@ -33,7 +42,7 @@ export const ExpenseProvider = ({ children }) => {
     return saved === 'true' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
   });
 
-  // Apply theme class to document
+  // Apply theme class
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark');
@@ -45,8 +54,79 @@ export const ExpenseProvider = ({ children }) => {
 
   const toggleDarkMode = () => setDarkMode(prev => !prev);
 
+  // Check auth user on mount
+  useEffect(() => {
+    const initAuth = async () => {
+      if (token) {
+        try {
+          const res = await expenseService.getMe();
+          if (res.success) {
+            setUser(res.data);
+            localStorage.setItem('user', JSON.stringify(res.data));
+          }
+        } catch (err) {
+          console.error(err);
+          logout();
+        }
+      }
+      setAuthLoading(false);
+    };
+
+    initAuth();
+  }, [token]);
+
+  // Auth Methods
+  const login = async (credentials) => {
+    try {
+      const res = await expenseService.login(credentials);
+      if (res.success) {
+        const { token: newToken, ...userData } = res.data;
+        setToken(newToken);
+        setUser(userData);
+        localStorage.setItem('token', newToken);
+        localStorage.setItem('user', JSON.stringify(userData));
+        toast.success(`Welcome back, ${userData.name}!`);
+        return true;
+      }
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Login failed';
+      toast.error(msg);
+      return false;
+    }
+  };
+
+  const register = async (userData) => {
+    try {
+      const res = await expenseService.register(userData);
+      if (res.success) {
+        const { token: newToken, ...userInfo } = res.data;
+        setToken(newToken);
+        setUser(userInfo);
+        localStorage.setItem('token', newToken);
+        localStorage.setItem('user', JSON.stringify(userInfo));
+        toast.success(`Account created! Welcome, ${userInfo.name}!`);
+        return true;
+      }
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Registration failed';
+      toast.error(msg);
+      return false;
+    }
+  };
+
+  const logout = () => {
+    setToken('');
+    setUser(null);
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setExpenses([]);
+    setDashboardData(null);
+    toast.success('Logged out successfully');
+  };
+
   // Fetch Dashboard details
   const fetchDashboard = async () => {
+    if (!token) return;
     setDashboardLoading(true);
     try {
       const res = await expenseService.getDashboard();
@@ -55,7 +135,6 @@ export const ExpenseProvider = ({ children }) => {
       }
     } catch (err) {
       console.error(err);
-      toast.error('Failed to load dashboard metrics');
     } finally {
       setDashboardLoading(false);
     }
@@ -63,6 +142,7 @@ export const ExpenseProvider = ({ children }) => {
 
   // Fetch Expenses with active filters
   const fetchExpenses = async () => {
+    if (!token) return;
     setLoading(true);
     try {
       const params = {
@@ -88,7 +168,6 @@ export const ExpenseProvider = ({ children }) => {
       }
     } catch (err) {
       console.error(err);
-      toast.error('Failed to load expenses list');
     } finally {
       setLoading(false);
     }
@@ -96,8 +175,10 @@ export const ExpenseProvider = ({ children }) => {
 
   // Trigger loading list when active filters change
   useEffect(() => {
-    fetchExpenses();
-  }, [search, category, startDate, endDate, month, sortBy, page]);
+    if (token) {
+      fetchExpenses();
+    }
+  }, [search, category, startDate, endDate, month, sortBy, page, token]);
 
   // Reset filters
   const resetFilters = () => {
@@ -111,7 +192,7 @@ export const ExpenseProvider = ({ children }) => {
     toast.success('Filters cleared');
   };
 
-  // Create
+  // CRUD actions
   const addExpense = async (data) => {
     setLoading(true);
     try {
@@ -131,7 +212,6 @@ export const ExpenseProvider = ({ children }) => {
     }
   };
 
-  // Update
   const editExpense = async (id, data) => {
     setLoading(true);
     try {
@@ -151,7 +231,6 @@ export const ExpenseProvider = ({ children }) => {
     }
   };
 
-  // Delete
   const deleteExpense = async (id) => {
     setLoading(true);
     try {
@@ -170,7 +249,6 @@ export const ExpenseProvider = ({ children }) => {
     }
   };
 
-  // Import CSV
   const importCSV = async (file) => {
     setLoading(true);
     try {
@@ -184,9 +262,6 @@ export const ExpenseProvider = ({ children }) => {
     } catch (err) {
       const msg = err.response?.data?.message || 'Failed to import CSV';
       toast.error(msg);
-      if (err.response?.data?.errors) {
-        err.response.data.errors.forEach(e => console.error(e));
-      }
       return false;
     } finally {
       setLoading(false);
@@ -205,6 +280,12 @@ export const ExpenseProvider = ({ children }) => {
   return (
     <ExpenseContext.Provider
       value={{
+        token,
+        user,
+        authLoading,
+        login,
+        register,
+        logout,
         expenses,
         pagination,
         dashboardData,

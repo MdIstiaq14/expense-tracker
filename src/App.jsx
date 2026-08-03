@@ -3,25 +3,42 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from 'react-hot-toast';
 import { ExpenseProvider } from './context/ExpenseContext';
 import MainLayout from './layouts/MainLayout';
+import ProtectedRoute from './components/ProtectedRoute';
 import Dashboard from './pages/Dashboard';
 import Expenses from './pages/Expenses';
 import AddExpense from './pages/AddExpense';
 import EditExpense from './pages/EditExpense';
+import Login from './pages/Login';
+import Register from './pages/Register';
 
 function App() {
   return (
     <ExpenseProvider>
       <Router>
-        <MainLayout>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/expenses" element={<Expenses />} />
-            <Route path="/add-expense" element={<AddExpense />} />
-            <Route path="/edit-expense/:id" element={<EditExpense />} />
-            {/* Fallback route */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </MainLayout>
+        <Routes>
+          {/* Public Auth Routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+
+          {/* Protected Main App Routes */}
+          <Route
+            path="/*"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <Routes>
+                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/expenses" element={<Expenses />} />
+                    <Route path="/add-expense" element={<AddExpense />} />
+                    <Route path="/edit-expense/:id" element={<EditExpense />} />
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                  </Routes>
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+
         {/* Toast alerts system */}
         <Toaster
           position="top-right"
