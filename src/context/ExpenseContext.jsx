@@ -168,6 +168,34 @@ export const ExpenseProvider = ({ children }) => {
     }
   };
 
+  const forgotPassword = async (email) => {
+    try {
+      const res = await expenseService.forgotPassword(email);
+      if (res.success) {
+        toast.success('Password reset link generated!');
+        return res;
+      }
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Failed to request password reset';
+      toast.error(msg);
+      return null;
+    }
+  };
+
+  const resetPassword = async (token, newPassword) => {
+    try {
+      const res = await expenseService.resetPassword(token, newPassword);
+      if (res.success) {
+        toast.success(res.message || 'Password reset successful!');
+        return res;
+      }
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Failed to reset password';
+      toast.error(msg);
+      return null;
+    }
+  };
+
   const logout = () => {
     setToken('');
     setUser(null);
@@ -342,6 +370,8 @@ export const ExpenseProvider = ({ children }) => {
         googleLogin,
         updateProfile,
         changePassword,
+        forgotPassword,
+        resetPassword,
         logout,
         expenses,
         pagination,

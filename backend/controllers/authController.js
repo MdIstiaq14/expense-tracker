@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 
 // Generate JWT Token
 const generateToken = (id) => {
@@ -111,12 +112,10 @@ exports.googleLogin = async (req, res) => {
     let user = await User.findOne({ email: email.toLowerCase() });
 
     if (user) {
-      // Update Google ID & avatar if not set
       if (!user.googleId) user.googleId = googleId || '';
       if (!user.avatar && picture) user.avatar = picture;
       await user.save();
     } else {
-      // Create new Google user
       user = await User.create({
         name: name || email.split('@')[0],
         email: email.toLowerCase(),
@@ -169,7 +168,6 @@ exports.updateProfile = async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    // Check if new email is already taken by another user
     if (email && email.toLowerCase() !== user.email) {
       const emailExists = await User.findOne({ email: email.toLowerCase() });
       if (emailExists) {
@@ -216,7 +214,6 @@ exports.changePassword = async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    // For local users, verify current password
     if (user.authProvider === 'local') {
       if (!currentPassword) {
         return res.status(400).json({ success: false, message: 'Please enter your current password' });
@@ -228,12 +225,104 @@ exports.changePassword = async (req, res) => {
     }
 
     user.password = newPassword;
-    user.authProvider = 'local'; // Enable local password login
+    user.authProvider = 'local';
     await user.save();
 
     res.status(200).json({
       success: true,
       message: 'Password updated successfully'
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Forgot Password - Request Password Reset
+// @route   POST /api/auth/forgot-password
+// @access  Public
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Please enter your email address' });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'No user account found with this email address' });
+    }
+
+    // Generate random unhashed reset token
+    const resetToken = crypto.randomBytes(20).toString('hex');
+
+    // Hash token and save to database
+    user.resetPasswordToken = crypto
+      .createHash('sha256')
+      .update(resetToken)
+      .digest('hex');
+
+    // Set token expiration (1 hour from now)
+    user.resetPasswordExpire = Date.now() + 60 * 60 * 1000;
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Password reset token generated successfully',
+      resetToken, // Returned for instant UI recovery link
+      resetUrl: `/reset-password/${resetToken}`
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Reset Password via Token
+// @route   POST /api/auth/reset-password/:token
+// @access  Public
+exports.resetPassword = async (req, res) => {
+  try {
+    const { newPassword } = req.body;
+
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({ success: false, message: 'New password must be at least 6 characters long' });
+    }
+
+    // Hash token to match database
+    const resetPasswordToken = crypto
+      .createHash('sha256')
+      .update(req.params.token)
+      .digest('hex');
+
+    const user = await User.findOne({
+      resetPasswordToken,
+      resetPasswordExpire: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ success: false, message: 'Invalid or expired password reset link' });
+    }
+
+    // Set new password
+    user.password = newPassword;
+    user.authProvider = 'local';
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Password reset successful! You can now log in.',
+      data: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar || '',
+        token: generateToken(user._id)
+      }
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
