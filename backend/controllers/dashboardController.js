@@ -8,7 +8,21 @@ exports.getDashboardData = async (req, res) => {
     const userId = req.user._id;
     const now = new Date();
 
-    // 1. Total Expenses for this user
+    // 1. Today's Expenses for this user
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+    const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    const todayAgg = await Expense.aggregate([
+      {
+        $match: {
+          user: userId,
+          date: { $gte: startOfToday, $lte: endOfToday }
+        }
+      },
+      { $group: { _id: null, total: { $sum: '$amount' } } }
+    ]);
+    const todayExpense = todayAgg.length > 0 ? todayAgg[0].total : 0;
+
+    // 2. Total Expenses for this user
     const totalAgg = await Expense.aggregate([
       { $match: { user: userId } },
       { $group: { _id: null, total: { $sum: '$amount' } } }
@@ -132,9 +146,10 @@ exports.getDashboardData = async (req, res) => {
     res.status(200).json({
       success: true,
       data: {
-        totalExpense: Math.round(totalExpense * 100) / 100,
-        monthlyExpense: Math.round(monthlyExpense * 100) / 100,
+        todayExpense: Math.round(todayExpense * 100) / 100,
         weeklyExpense: Math.round(weeklyExpense * 100) / 100,
+        monthlyExpense: Math.round(monthlyExpense * 100) / 100,
+        totalExpense: Math.round(totalExpense * 100) / 100,
         totalTransactions,
         recentTransactions,
         charts: {

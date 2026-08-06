@@ -60,19 +60,11 @@ const Dashboard = () => {
       {/* KPI Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <DashboardCard
-          title="Total Outflow"
-          value={formatCurrency(stats.totalExpense)}
-          icon={FiDollarSign}
-          color="blue"
-          trend="Cumulative"
-        />
-        <DashboardCard
-          title="This Month"
-          value={formatCurrency(stats.monthlyExpense)}
-          icon={FiCalendar}
-          color="indigo"
-          trend={stats.monthlyExpense > 2000 ? "High usage" : "Within bounds"}
-          trendType={stats.monthlyExpense > 2000 ? "up" : "down"}
+          title="Today's Expense"
+          value={formatCurrency(stats.todayExpense || 0)}
+          icon={FiActivity}
+          color="emerald"
+          trend="Today's total"
         />
         <DashboardCard
           title="This Week"
@@ -83,11 +75,19 @@ const Dashboard = () => {
           trendType={stats.weeklyExpense > 500 ? "up" : "down"}
         />
         <DashboardCard
-          title="All Transactions"
-          value={stats.totalTransactions.toString()}
-          icon={FiTag}
-          color="amber"
-          trend="Total entries"
+          title="This Month"
+          value={formatCurrency(stats.monthlyExpense)}
+          icon={FiCalendar}
+          color="indigo"
+          trend={stats.monthlyExpense > 2000 ? "High usage" : "Within bounds"}
+          trendType={stats.monthlyExpense > 2000 ? "up" : "down"}
+        />
+        <DashboardCard
+          title="Total Outflow"
+          value={formatCurrency(stats.totalExpense)}
+          icon={FiDollarSign}
+          color="blue"
+          trend="Cumulative"
         />
       </div>
 
