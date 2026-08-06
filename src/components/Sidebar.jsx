@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { FiGrid, FiList, FiPlusCircle, FiX, FiLogOut, FiUser } from 'react-icons/fi';
+import { FiGrid, FiList, FiPlusCircle, FiX, FiLogOut, FiUser, FiShield, FiInfo } from 'react-icons/fi';
 import { useExpenses } from '../context/ExpenseContext';
+import AboutOwnerModal from './AboutOwnerModal';
 import logoImg from '../assets/logo.png';
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const { dashboardData, formatCurrency, user, logout } = useExpenses();
+  const [showAboutModal, setShowAboutModal] = useState(false);
 
   const navigation = [
     { name: 'Dashboard', to: '/', icon: FiGrid },
@@ -14,8 +16,18 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     { name: 'Profile Settings', to: '/profile', icon: FiUser },
   ];
 
+  if (user?.isAdmin) {
+    navigation.push({ name: 'Admin Portal', to: '/admin', icon: FiShield });
+  }
+
   return (
     <>
+      {/* About Owner Modal */}
+      <AboutOwnerModal
+        isOpen={showAboutModal}
+        onClose={() => setShowAboutModal(false)}
+      />
+
       {/* Mobile Backdrop Overlay */}
       {isOpen && (
         <div
@@ -49,7 +61,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         </div>
 
         {/* Sidebar Navigation */}
-        <nav className="flex-1 space-y-1.5 px-4 py-6 overflow-y-auto">
+        <nav className="flex-1 space-y-1.5 px-4 py-5 overflow-y-auto">
           {navigation.map((item) => (
             <NavLink
               key={item.name}
@@ -80,6 +92,28 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
               }}
             </NavLink>
           ))}
+
+          {/* Owner Branding Card */}
+          <div className="pt-3">
+            <button
+              type="button"
+              onClick={() => setShowAboutModal(true)}
+              className="w-full bg-gradient-to-tr from-emerald-50 to-primary-50 dark:from-emerald-950/30 dark:to-primary-950/30 border border-emerald-200/60 dark:border-emerald-900/40 rounded-xl p-3 text-left hover:scale-[1.02] transition-transform duration-200 shadow-sm"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">
+                  Created & Managed By
+                </span>
+                <FiInfo className="h-3.5 w-3.5 text-emerald-500" />
+              </div>
+              <span className="text-xs font-extrabold text-gray-900 dark:text-white block mt-0.5">
+                Md Istiaq
+              </span>
+              <span className="text-[10px] text-gray-500 dark:text-gray-400 block mt-0.5">
+                Founder & Lead Developer &bull; Tap for Info
+              </span>
+            </button>
+          </div>
 
           <button
             onClick={() => {

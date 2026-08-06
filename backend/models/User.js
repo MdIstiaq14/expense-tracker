@@ -39,6 +39,10 @@ const userSchema = new mongoose.Schema(
       enum: ['local', 'google'],
       default: 'local'
     },
+    isAdmin: {
+      type: Boolean,
+      default: false
+    },
     resetPasswordToken: String,
     resetPasswordExpire: Date
   },

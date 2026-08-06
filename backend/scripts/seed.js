@@ -137,9 +137,10 @@ const seedDB = async () => {
 
     console.log('Creating demo user account (admin@expense.com / password123)...');
     const demoUser = await User.create({
-      name: 'Istiaq Administrator',
+      name: 'Md Istiaq (Admin & Owner)',
       email: 'admin@expense.com',
-      password: 'password123'
+      password: 'password123',
+      isAdmin: true
     });
 
     console.log('Generating seed data bound to demo user...');

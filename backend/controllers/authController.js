@@ -11,6 +11,12 @@ const generateToken = (id) => {
   );
 };
 
+// Helper: Check if user is admin
+const isUserAdmin = (user) => {
+  if (!user) return false;
+  return user.isAdmin === true || user.email === 'admin@expense.com';
+};
+
 // @desc    Register a new user
 // @route   POST /api/auth/register
 // @access  Public
@@ -28,12 +34,15 @@ exports.registerUser = async (req, res) => {
       return res.status(400).json({ success: false, message: 'An account with this email already exists' });
     }
 
+    const isAdmin = email.toLowerCase() === 'admin@expense.com';
+
     // Create user
     const user = await User.create({
       name,
       email: email.toLowerCase(),
       password,
-      authProvider: 'local'
+      authProvider: 'local',
+      isAdmin
     });
 
     if (user) {
@@ -45,6 +54,7 @@ exports.registerUser = async (req, res) => {
           email: user.email,
           avatar: user.avatar || '',
           authProvider: user.authProvider,
+          isAdmin: isUserAdmin(user),
           token: generateToken(user._id)
         }
       });
@@ -87,6 +97,7 @@ exports.loginUser = async (req, res) => {
           email: user.email,
           avatar: user.avatar || '',
           authProvider: user.authProvider,
+          isAdmin: isUserAdmin(user),
           token: generateToken(user._id)
         }
       });
@@ -110,10 +121,12 @@ exports.googleLogin = async (req, res) => {
     }
 
     let user = await User.findOne({ email: email.toLowerCase() });
+    const isAdmin = email.toLowerCase() === 'admin@expense.com';
 
     if (user) {
       if (!user.googleId) user.googleId = googleId || '';
       if (!user.avatar && picture) user.avatar = picture;
+      if (isAdmin) user.isAdmin = true;
       await user.save();
     } else {
       user = await User.create({
@@ -121,7 +134,8 @@ exports.googleLogin = async (req, res) => {
         email: email.toLowerCase(),
         avatar: picture || '',
         googleId: googleId || '',
-        authProvider: 'google'
+        authProvider: 'google',
+        isAdmin
       });
     }
 
@@ -133,6 +147,7 @@ exports.googleLogin = async (req, res) => {
         email: user.email,
         avatar: user.avatar || '',
         authProvider: user.authProvider,
+        isAdmin: isUserAdmin(user),
         token: generateToken(user._id)
       }
     });
@@ -147,9 +162,12 @@ exports.googleLogin = async (req, res) => {
 exports.getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select('-password');
+    const userData = user.toObject();
+    userData.isAdmin = isUserAdmin(user);
+
     res.status(200).json({
       success: true,
-      data: user
+      data: userData
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -189,6 +207,7 @@ exports.updateProfile = async (req, res) => {
         email: updatedUser.email,
         avatar: updatedUser.avatar || '',
         authProvider: updatedUser.authProvider,
+        isAdmin: isUserAdmin(updatedUser),
         token: generateToken(updatedUser._id)
       }
     });
@@ -254,16 +273,13 @@ exports.forgotPassword = async (req, res) => {
       return res.status(404).json({ success: false, message: 'No user account found with this email address' });
     }
 
-    // Generate random unhashed reset token
     const resetToken = crypto.randomBytes(20).toString('hex');
 
-    // Hash token and save to database
     user.resetPasswordToken = crypto
       .createHash('sha256')
       .update(resetToken)
       .digest('hex');
 
-    // Set token expiration (1 hour from now)
     user.resetPasswordExpire = Date.now() + 60 * 60 * 1000;
 
     await user.save();
@@ -271,7 +287,7 @@ exports.forgotPassword = async (req, res) => {
     res.status(200).json({
       success: true,
       message: 'Password reset token generated successfully',
-      resetToken, // Returned for instant UI recovery link
+      resetToken,
       resetUrl: `/reset-password/${resetToken}`
     });
   } catch (error) {
@@ -290,7 +306,6 @@ exports.resetPassword = async (req, res) => {
       return res.status(400).json({ success: false, message: 'New password must be at least 6 characters long' });
     }
 
-    // Hash token to match database
     const resetPasswordToken = crypto
       .createHash('sha256')
       .update(req.params.token)
@@ -305,7 +320,6 @@ exports.resetPassword = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid or expired password reset link' });
     }
 
-    // Set new password
     user.password = newPassword;
     user.authProvider = 'local';
     user.resetPasswordToken = undefined;
@@ -321,7 +335,36 @@ exports.resetPassword = async (req, res) => {
         name: user.name,
         email: user.email,
         avatar: user.avatar || '',
+        isAdmin: isUserAdmin(user),
         token: generateToken(user._id)
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Get Admin Stats & Privacy-Preserved User Names List
+// @route   GET /api/auth/admin-stats
+// @access  Private (Admin Only)
+exports.getAdminStats = async (req, res) => {
+  try {
+    if (!isUserAdmin(req.user)) {
+      return res.status(403).json({ success: false, message: 'Access denied: Admin privileges required' });
+    }
+
+    const totalUsers = await User.countDocuments();
+
+    // Privacy-preserving query: Select ONLY name, avatar, and createdAt fields (no emails)
+    const usersList = await User.find()
+      .select('name avatar createdAt')
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalUsers,
+        usersList
       }
     });
   } catch (error) {

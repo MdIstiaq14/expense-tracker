@@ -196,6 +196,18 @@ export const ExpenseProvider = ({ children }) => {
     }
   };
 
+  const getAdminStats = async () => {
+    try {
+      const res = await expenseService.getAdminStats();
+      if (res.success) {
+        return res.data;
+      }
+    } catch (err) {
+      console.error(err);
+      return null;
+    }
+  };
+
   const logout = () => {
     setToken('');
     setUser(null);
@@ -372,6 +384,7 @@ export const ExpenseProvider = ({ children }) => {
         changePassword,
         forgotPassword,
         resetPassword,
+        getAdminStats,
         logout,
         expenses,
         pagination,

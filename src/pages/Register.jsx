@@ -182,12 +182,16 @@ const Register = () => {
         </form>
 
         {/* Footer Link */}
-        <div className="text-center pt-1">
+        <div className="text-center pt-1 space-y-3">
           <p className="text-xs text-gray-500 dark:text-gray-400">
             Already have an account?{' '}
             <Link to="/login" className="font-bold text-primary-500 hover:underline">
               Sign In
             </Link>
+          </p>
+
+          <p className="text-[10px] text-gray-400 dark:text-gray-500 border-t border-gray-100 dark:border-gray-700/60 pt-3">
+            &copy; 2026 My Expense Tracker &bull; Designed &amp; Developed by <span className="font-bold text-gray-600 dark:text-gray-400">Md Istiaq</span>
           </p>
         </div>
       </div>
