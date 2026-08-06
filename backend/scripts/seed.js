@@ -131,17 +131,20 @@ const seedDB = async () => {
     await mongoose.connect(process.env.MONGODB_URI);
     console.log('MongoDB Connected.');
 
-    console.log('Clearing existing records...');
-    await Expense.deleteMany();
-    await User.deleteMany();
-
-    console.log('Creating Admin user account (mdistiaqadmin@gmail.com / adminexpense14)...');
-    const demoUser = await User.create({
-      name: 'Md Istiaq (Admin & Owner)',
-      email: 'mdistiaqadmin@gmail.com',
-      password: 'adminexpense14',
-      isAdmin: true
-    });
+    console.log('Preserving existing user accounts...');
+    // Non-destructive: Upsert Admin account without deleting existing registered users
+    let demoUser = await User.findOne({ email: 'mdistiaqadmin@gmail.com' });
+    if (!demoUser) {
+      demoUser = await User.create({
+        name: 'Md Istiaq (Admin & Owner)',
+        email: 'mdistiaqadmin@gmail.com',
+        password: 'adminexpense14',
+        isAdmin: true
+      });
+    } else {
+      demoUser.isAdmin = true;
+      await demoUser.save();
+    }
 
     console.log('Generating seed data bound to demo user...');
     const seedExpenses = generateSeedData(demoUser._id);
