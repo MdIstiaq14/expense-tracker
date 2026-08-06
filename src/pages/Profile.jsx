@@ -22,7 +22,7 @@ const Profile = () => {
   // Active Tab: 'info' or 'security'
   const [activeTab, setActiveTab] = useState('info');
 
-  // Handle Photo Upload (Convert image file to Base64)
+  // Handle Photo Upload (Convert & compress image file)
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -32,15 +32,38 @@ const Profile = () => {
       return;
     }
 
-    if (file.size > 3 * 1024 * 1024) {
-      toast.error('Image size must be less than 3MB');
-      return;
-    }
-
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setAvatar(reader.result);
-      toast.success('Photo selected! Click "Save Profile Changes" below.');
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 400;
+        const MAX_HEIGHT = 400;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height = Math.round((height * MAX_WIDTH) / width);
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width = Math.round((width * MAX_HEIGHT) / height);
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.85);
+        setAvatar(compressedBase64);
+        toast.success('Photo selected & optimized! Click "Save Profile Changes" below.');
+      };
     };
     reader.readAsDataURL(file);
   };
