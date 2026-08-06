@@ -1,8 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { FiGrid, FiList, FiPlusCircle, FiX, FiTrendingUp, FiLogOut } from 'react-icons/fi';
+import { FiGrid, FiList, FiPlusCircle, FiX, FiLogOut, FiUser } from 'react-icons/fi';
 import { useExpenses } from '../context/ExpenseContext';
-
 import logoImg from '../assets/logo.png';
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
@@ -12,6 +11,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     { name: 'Dashboard', to: '/', icon: FiGrid },
     { name: 'Expenses', to: '/expenses', icon: FiList },
     { name: 'Add Expense', to: '/add-expense', icon: FiPlusCircle },
+    { name: 'Profile Settings', to: '/profile', icon: FiUser },
   ];
 
   return (

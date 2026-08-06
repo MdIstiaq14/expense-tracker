@@ -114,6 +114,60 @@ export const ExpenseProvider = ({ children }) => {
     }
   };
 
+  const googleLogin = async (googleData) => {
+    try {
+      const res = await expenseService.googleLogin(googleData);
+      if (res.success) {
+        const { token: newToken, ...userInfo } = res.data;
+        setToken(newToken);
+        setUser(userInfo);
+        localStorage.setItem('token', newToken);
+        localStorage.setItem('user', JSON.stringify(userInfo));
+        toast.success(`Welcome, ${userInfo.name}!`);
+        return true;
+      }
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Google login failed';
+      toast.error(msg);
+      return false;
+    }
+  };
+
+  const updateProfile = async (profileData) => {
+    try {
+      const res = await expenseService.updateProfile(profileData);
+      if (res.success) {
+        const { token: newToken, ...userInfo } = res.data;
+        if (newToken) {
+          setToken(newToken);
+          localStorage.setItem('token', newToken);
+        }
+        setUser(userInfo);
+        localStorage.setItem('user', JSON.stringify(userInfo));
+        toast.success('Profile updated successfully');
+        return true;
+      }
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Failed to update profile';
+      toast.error(msg);
+      return false;
+    }
+  };
+
+  const changePassword = async (passData) => {
+    try {
+      const res = await expenseService.changePassword(passData);
+      if (res.success) {
+        toast.success(res.message || 'Password changed successfully');
+        return true;
+      }
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Failed to change password';
+      toast.error(msg);
+      return false;
+    }
+  };
+
   const logout = () => {
     setToken('');
     setUser(null);
@@ -285,6 +339,9 @@ export const ExpenseProvider = ({ children }) => {
         authLoading,
         login,
         register,
+        googleLogin,
+        updateProfile,
+        changePassword,
         logout,
         expenses,
         pagination,

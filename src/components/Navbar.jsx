@@ -1,6 +1,6 @@
 import React from 'react';
-import { useLocation } from 'react-router-dom';
-import { FiMenu, FiSun, FiMoon, FiBell, FiLogOut } from 'react-icons/fi';
+import { useLocation, Link } from 'react-router-dom';
+import { FiMenu, FiSun, FiMoon, FiBell, FiLogOut, FiUser } from 'react-icons/fi';
 import { useExpenses } from '../context/ExpenseContext';
 
 const Navbar = ({ onMenuClick }) => {
@@ -16,8 +16,8 @@ const Navbar = ({ onMenuClick }) => {
         return 'Expense Registry';
       case '/add-expense':
         return 'Log New Expense';
-      case '/edit-expense':
-        return 'Modify Expense';
+      case '/profile':
+        return 'Profile & Settings';
       default:
         if (location.pathname.startsWith('/edit-expense/')) {
           return 'Modify Expense Details';
@@ -88,20 +88,32 @@ const Navbar = ({ onMenuClick }) => {
         {/* Divider */}
         <div className="h-px bg-gray-200 dark:bg-gray-700 w-4 self-stretch my-3 hidden sm:block" />
 
-        {/* User Profile Badge */}
-        <div className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-primary-600 to-primary-400 text-white font-bold text-xs shadow-sm">
-            {getInitials(user?.name)}
-          </div>
+        {/* User Profile Badge (Clickable link to /profile) */}
+        <Link
+          to="/profile"
+          className="flex items-center gap-2 hover:opacity-90 transition-opacity p-1 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/50"
+          title="View Profile Settings"
+        >
+          {user?.avatar ? (
+            <img
+              src={user.avatar}
+              alt={user.name}
+              className="h-9 w-9 rounded-xl object-cover shadow-sm border border-primary-500/20"
+            />
+          ) : (
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-primary-600 to-primary-400 text-white font-bold text-xs shadow-sm">
+              {getInitials(user?.name)}
+            </div>
+          )}
           <div className="hidden sm:block text-left max-w-[120px]">
             <span className="block text-xs font-semibold text-gray-800 dark:text-gray-200 truncate">
               {user?.name || 'User'}
             </span>
             <span className="block text-[10px] text-gray-400 dark:text-gray-500 truncate">
-              {user?.email || ''}
+              Profile & Settings
             </span>
           </div>
-        </div>
+        </Link>
 
         {/* Logout Button */}
         <button

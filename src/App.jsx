@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard';
 import Expenses from './pages/Expenses';
 import AddExpense from './pages/AddExpense';
 import EditExpense from './pages/EditExpense';
+import Profile from './pages/Profile';
 import Login from './pages/Login';
 import Register from './pages/Register';
 
@@ -31,6 +32,7 @@ function App() {
                     <Route path="/expenses" element={<Expenses />} />
                     <Route path="/add-expense" element={<AddExpense />} />
                     <Route path="/edit-expense/:id" element={<EditExpense />} />
+                    <Route path="/profile" element={<Profile />} />
                     <Route path="*" element={<Navigate to="/" replace />} />
                   </Routes>
                 </MainLayout>
