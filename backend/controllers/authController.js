@@ -14,7 +14,8 @@ const generateToken = (id) => {
 // Helper: Check if user is admin
 const isUserAdmin = (user) => {
   if (!user) return false;
-  return user.isAdmin === true || user.email === 'admin@expense.com';
+  const email = (user.email || '').toLowerCase();
+  return user.isAdmin === true || email === 'mdistiaqadmin@gmail.com' || email === 'admin@expense.com';
 };
 
 // @desc    Register a new user
@@ -34,12 +35,13 @@ exports.registerUser = async (req, res) => {
       return res.status(400).json({ success: false, message: 'An account with this email already exists' });
     }
 
-    const isAdmin = email.toLowerCase() === 'admin@expense.com';
+    const cleanEmail = email.toLowerCase();
+    const isAdmin = cleanEmail === 'mdistiaqadmin@gmail.com' || cleanEmail === 'admin@expense.com';
 
     // Create user
     const user = await User.create({
       name,
-      email: email.toLowerCase(),
+      email: cleanEmail,
       password,
       authProvider: 'local',
       isAdmin

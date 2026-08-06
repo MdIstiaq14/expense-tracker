@@ -135,11 +135,11 @@ const seedDB = async () => {
     await Expense.deleteMany();
     await User.deleteMany();
 
-    console.log('Creating demo user account (admin@expense.com / password123)...');
+    console.log('Creating Admin user account (mdistiaqadmin@gmail.com / adminexpense14)...');
     const demoUser = await User.create({
       name: 'Md Istiaq (Admin & Owner)',
-      email: 'admin@expense.com',
-      password: 'password123',
+      email: 'mdistiaqadmin@gmail.com',
+      password: 'adminexpense14',
       isAdmin: true
     });
 
