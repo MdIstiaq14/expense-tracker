@@ -240,6 +240,37 @@ const ExpenseTable = () => {
                 <span className="font-semibold text-gray-400 dark:text-gray-500">Payment Method</span>
                 <span className="font-semibold text-gray-700 dark:text-gray-300">{selectedExpense.paymentMethod}</span>
               </div>
+
+              {/* Itemized Purchased Products Breakdown */}
+              {Array.isArray(selectedExpense.items) && selectedExpense.items.length > 0 && (
+                <div className="flex flex-col gap-1.5 py-2 border-b border-gray-100 dark:border-gray-750">
+                  <span className="font-semibold text-gray-400 dark:text-gray-500 flex items-center justify-between">
+                    <span>Purchased Products Breakdown</span>
+                    <span className="text-[10px] text-emerald-500 font-bold">{selectedExpense.items.length} Items</span>
+                  </span>
+                  <div className="bg-gray-50 dark:bg-gray-900/40 rounded-xl border border-gray-100 dark:border-gray-700/60 overflow-hidden">
+                    <table className="w-full text-[11px] text-left">
+                      <thead className="bg-gray-100/60 dark:bg-gray-800/60 text-gray-500 dark:text-gray-400">
+                        <tr>
+                          <th className="px-3 py-1.5 font-bold">Product Name</th>
+                          <th className="px-2 py-1.5 font-bold text-center">Qty</th>
+                          <th className="px-3 py-1.5 font-bold text-right">Price</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100 dark:divide-gray-750">
+                        {selectedExpense.items.map((it, idx) => (
+                          <tr key={idx}>
+                            <td className="px-3 py-1.5 font-medium text-gray-800 dark:text-gray-200">{it.name}</td>
+                            <td className="px-2 py-1.5 text-center text-gray-500 dark:text-gray-400">{it.quantity || 1}</td>
+                            <td className="px-3 py-1.5 text-right font-bold text-gray-900 dark:text-white">{formatCurrency(it.price * (it.quantity || 1))}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
               <div className="flex flex-col gap-1.5 py-2">
                 <span className="font-semibold text-gray-400 dark:text-gray-500">Notes & Descriptions</span>
                 <p className="text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900/40 p-2.5 rounded-xl border border-gray-100 dark:border-gray-700/60 leading-relaxed max-h-24 overflow-y-auto">

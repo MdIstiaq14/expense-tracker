@@ -64,7 +64,14 @@ const expenseSchema = new mongoose.Schema(
       type: String,
       trim: true,
       default: ''
-    }
+    },
+    items: [
+      {
+        name: { type: String, required: true, trim: true },
+        price: { type: Number, required: true, min: 0 },
+        quantity: { type: Number, default: 1, min: 1 }
+      }
+    ]
   },
   {
     timestamps: true

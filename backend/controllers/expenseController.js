@@ -99,7 +99,7 @@ exports.getExpenseById = async (req, res) => {
 // @access  Private
 exports.createExpense = async (req, res) => {
   try {
-    const { title, amount, category, paymentMethod, date, notes } = req.body;
+    const { title, amount, category, paymentMethod, date, notes, items } = req.body;
 
     const expense = await Expense.create({
       user: req.user._id,
@@ -108,7 +108,8 @@ exports.createExpense = async (req, res) => {
       category,
       paymentMethod,
       date: date ? new Date(date) : undefined,
-      notes
+      notes,
+      items: Array.isArray(items) ? items : []
     });
 
     res.status(201).json({ success: true, data: expense });
@@ -126,7 +127,7 @@ exports.createExpense = async (req, res) => {
 // @access  Private
 exports.updateExpense = async (req, res) => {
   try {
-    const { title, amount, category, paymentMethod, date, notes } = req.body;
+    const { title, amount, category, paymentMethod, date, notes, items } = req.body;
 
     let expense = await Expense.findOne({ _id: req.params.id, user: req.user._id });
     if (!expense) {
@@ -135,7 +136,15 @@ exports.updateExpense = async (req, res) => {
 
     expense = await Expense.findByIdAndUpdate(
       req.params.id,
-      { title, amount, category, paymentMethod, date, notes },
+      {
+        title,
+        amount,
+        category,
+        paymentMethod,
+        date,
+        notes,
+        items: Array.isArray(items) ? items : []
+      },
       { new: true, runValidators: true }
     );
 
