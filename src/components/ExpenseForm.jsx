@@ -139,74 +139,77 @@ const ExpenseForm = ({ onSubmit, initialData = null, onCancel, submitLabel = 'Sa
 
   return (
     <form onSubmit={handleFormSubmit} className="space-y-5">
-      {/* Title */}
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="title" className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-          Expense Title *
-        </label>
-        <input
-          type="text"
-          id="title"
-          value={title}
-          onChange={(e) => {
-            setTitle(e.target.value);
-            if (errors.title) setErrors(prev => ({ ...prev, title: null }));
-          }}
-          placeholder="e.g., Weekly Grocery & Supermarket shopping"
-          className={`w-full px-4 py-3 sm:py-2.5 rounded-xl border bg-white dark:bg-gray-800 text-base sm:text-sm focus:outline-none focus:ring-2 transition-all ${
-            errors.title
-              ? 'border-rose-300 dark:border-rose-800 focus:ring-rose-500/10'
-              : 'border-gray-200 dark:border-gray-700 focus:border-primary-500 focus:ring-primary-500/10'
-          } dark:text-white`}
-        />
-        {errors.title && (
-          <span className="text-[11px] sm:text-[10px] font-bold text-rose-500 flex items-center gap-1 mt-0.5">
-            <FiInfo className="shrink-0" /> {errors.title}
-          </span>
-        )}
-      </div>
-
-      {/* Amount */}
-      <div className="flex flex-col gap-1.5">
-        <div className="flex items-center justify-between">
-          <label htmlFor="amount" className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-            Total Amount (৳) *
+      {/* 1. Title & Amount Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {/* Title */}
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="title" className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+            Expense Title *
           </label>
-          {items.length > 0 && (
-            <button
-              type="button"
-              onClick={handleAutoSumAmount}
-              className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
-              title="Auto-calculate total from purchased items sum"
-            >
-              <FiCalculator className="h-3 w-3" /> Auto-Sum Items
-            </button>
+          <input
+            type="text"
+            id="title"
+            value={title}
+            onChange={(e) => {
+              setTitle(e.target.value);
+              if (errors.title) setErrors(prev => ({ ...prev, title: null }));
+            }}
+            placeholder="e.g., Weekly Grocery & Supermarket shopping"
+            className={`w-full px-4 py-3 sm:py-2.5 rounded-xl border bg-white dark:bg-gray-800 text-base sm:text-sm focus:outline-none focus:ring-2 transition-all ${
+              errors.title
+                ? 'border-rose-300 dark:border-rose-800 focus:ring-rose-500/10'
+                : 'border-gray-200 dark:border-gray-700 focus:border-primary-500 focus:ring-primary-500/10'
+            } dark:text-white`}
+          />
+          {errors.title && (
+            <span className="text-[11px] sm:text-[10px] font-bold text-rose-500 flex items-center gap-1 mt-0.5">
+              <FiInfo className="shrink-0" /> {errors.title}
+            </span>
           )}
         </div>
-        <input
-          type="number"
-          id="amount"
-          step="0.01"
-          value={amount}
-          onChange={(e) => {
-            setAmount(e.target.value);
-            if (errors.amount) setErrors(prev => ({ ...prev, amount: null }));
-          }}
-          placeholder="0.00"
-          className={`w-full px-4 py-3 sm:py-2.5 rounded-xl border bg-white dark:bg-gray-800 text-base sm:text-sm focus:outline-none focus:ring-2 transition-all ${
-            errors.amount
-              ? 'border-rose-300 dark:border-rose-800 focus:ring-rose-500/10'
-              : 'border-gray-200 dark:border-gray-700 focus:border-primary-500 focus:ring-primary-500/10'
-          } dark:text-white`}
-        />
-        {errors.amount && (
-          <span className="text-[11px] sm:text-[10px] font-bold text-rose-500 flex items-center gap-1 mt-0.5">
-            <FiInfo className="shrink-0" /> {errors.amount}
-          </span>
-        )}
+
+        {/* Amount */}
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center justify-between">
+            <label htmlFor="amount" className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+              Total Amount (৳) *
+            </label>
+            {items.length > 0 && (
+              <button
+                type="button"
+                onClick={handleAutoSumAmount}
+                className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
+                title="Auto-calculate total from purchased items sum"
+              >
+                <FiCalculator className="h-3 w-3" /> Auto-Sum Items
+              </button>
+            )}
+          </div>
+          <input
+            type="number"
+            id="amount"
+            step="0.01"
+            value={amount}
+            onChange={(e) => {
+              setAmount(e.target.value);
+              if (errors.amount) setErrors(prev => ({ ...prev, amount: null }));
+            }}
+            placeholder="0.00"
+            className={`w-full px-4 py-3 sm:py-2.5 rounded-xl border bg-white dark:bg-gray-800 text-base sm:text-sm focus:outline-none focus:ring-2 transition-all ${
+              errors.amount
+                ? 'border-rose-300 dark:border-rose-800 focus:ring-rose-500/10'
+                : 'border-gray-200 dark:border-gray-700 focus:border-primary-500 focus:ring-primary-500/10'
+            } dark:text-white`}
+          />
+          {errors.amount && (
+            <span className="text-[11px] sm:text-[10px] font-bold text-rose-500 flex items-center gap-1 mt-0.5">
+              <FiInfo className="shrink-0" /> {errors.amount}
+            </span>
+          )}
+        </div>
       </div>
 
-      {/* Category Selection */}
+      {/* 2. Category Selection Row */}
       <div className="flex flex-col gap-1.5">
         <label htmlFor="category" className="text-xs font-semibold text-gray-500 dark:text-gray-400">
           Category *
@@ -238,11 +241,11 @@ const ExpenseForm = ({ onSubmit, initialData = null, onCancel, submitLabel = 'Sa
         )}
       </div>
 
-      {/* 🛍️ Itemized Purchased Products Section (PLACED DIRECTLY AFTER CATEGORY) */}
-      <div className="border border-emerald-200 dark:border-emerald-900/60 rounded-2xl p-4 sm:p-5 bg-emerald-50/40 dark:bg-emerald-950/20 space-y-4">
+      {/* 3. 🛍️ Itemized Purchased Products Section (DIRECTLY AFTER CATEGORY) */}
+      <div className="border border-emerald-300 dark:border-emerald-800/80 rounded-2xl p-4 sm:p-5 bg-emerald-50/60 dark:bg-emerald-950/30 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <FiShoppingBag className="h-4.5 w-4.5 text-emerald-600 dark:text-emerald-400" />
+            <FiShoppingBag className="h-4.5 w-4.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <div>
               <h4 className="text-xs font-bold text-gray-900 dark:text-white">Purchased Products & Prices (Optional)</h4>
               <p className="text-[10px] text-gray-500 dark:text-gray-400">Add names and prices of individual products you bought</p>
@@ -251,20 +254,20 @@ const ExpenseForm = ({ onSubmit, initialData = null, onCancel, submitLabel = 'Sa
           <button
             type="button"
             onClick={handleAddItem}
-            className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all flex items-center gap-1 cursor-pointer"
+            className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all flex items-center gap-1 cursor-pointer shrink-0"
           >
             <FiPlus className="h-3.5 w-3.5" /> + Add Product
           </button>
         </div>
 
         {items.length === 0 ? (
-          <div className="text-center py-2">
+          <div className="text-left">
             <button
               type="button"
               onClick={handleAddItem}
-              className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline inline-flex items-center gap-1"
+              className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:underline inline-flex items-center gap-1 py-1"
             >
-              <FiPlus className="h-3.5 w-3.5" /> Click here to list product names and prices
+              <FiPlus className="h-3.5 w-3.5" /> Tap here to list product names and prices
             </button>
           </div>
         ) : (
@@ -320,7 +323,7 @@ const ExpenseForm = ({ onSubmit, initialData = null, onCancel, submitLabel = 'Sa
         )}
       </div>
 
-      {/* Payment Method & Date in Grid */}
+      {/* 4. Payment Method & Date Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* Payment Method */}
         <div className="flex flex-col gap-1.5">
@@ -368,7 +371,7 @@ const ExpenseForm = ({ onSubmit, initialData = null, onCancel, submitLabel = 'Sa
         </div>
       </div>
 
-      {/* Notes */}
+      {/* 5. Notes */}
       <div className="flex flex-col gap-1.5">
         <label htmlFor="notes" className="text-xs font-semibold text-gray-500 dark:text-gray-400">
           Notes (Optional)
