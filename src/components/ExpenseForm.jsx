@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FiSave, FiX, FiInfo, FiPlus, FiTrash2, FiShoppingBag, FiCalculator } from 'react-icons/fi';
+import { FiSave, FiX, FiInfo, FiPlus, FiTrash2, FiShoppingBag, FiDollarSign } from 'react-icons/fi';
 
 const ExpenseForm = ({ onSubmit, initialData = null, onCancel, submitLabel = 'Save Expense' }) => {
   const categories = [
@@ -181,7 +181,7 @@ const ExpenseForm = ({ onSubmit, initialData = null, onCancel, submitLabel = 'Sa
                 className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
                 title="Auto-calculate total from purchased items sum"
               >
-                <FiCalculator className="h-3 w-3" /> Auto-Sum Items
+                <FiDollarSign className="h-3 w-3" /> Auto-Sum Items
               </button>
             )}
           </div>
@@ -316,7 +316,7 @@ const ExpenseForm = ({ onSubmit, initialData = null, onCancel, submitLabel = 'Sa
                 onClick={handleAutoSumAmount}
                 className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-sm transition-all flex items-center gap-1 cursor-pointer"
               >
-                <FiCalculator className="h-3.5 w-3.5" /> Calculate Total Amount
+                <FiDollarSign className="h-3.5 w-3.5" /> Calculate Total Amount
               </button>
             </div>
           </div>
